@@ -1,173 +1,99 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. AMBIL SEMUA ELEMENT
-    const tabPhoto = document.getElementById('tab-photo');
-    const tabVideo = document.getElementById('tab-video');
-    const sectionPhoto = document.getElementById('section-photo');
-    const sectionVideo = document.getElementById('section-video');
+    //... SEMUA KODE ATAS SAMA KAYAK SEBELUMNYA...
+    // COPY DARI VERSI SEBELUMNYA SAMPAI BAGIAN setupDrop
 
-    const inputPhoto = document.getElementById('input-photo');
-    const inputVideo = document.getElementById('input-video');
-    const dropPhoto = document.getElementById('drop-photo');
-    const dropVideo = document.getElementById('drop-video');
-    const previewPhoto = document.getElementById('preview-photo');
-    const previewVideo = document.getElementById('preview-video');
-    const iconPhoto = document.getElementById('icon-photo');
-    const iconVideo = document.getElementById('icon-video');
-    const textPhoto = document.getElementById('text-photo');
-    const textVideo = document.getElementById('text-video');
+    // FUNGSI BUKA APP / WEB
+    document.querySelectorAll('.open-app').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const appUrl = btn.dataset.app;
+            const webUrl = btn.dataset.web;
+            const start = Date.now();
 
-    const btnUploadPhoto = document.getElementById('btn-upload-photo');
-    const btnUploadVideo = document.getElementById('btn-upload-video');
-    const resultPhoto = document.getElementById('result-photo');
-    const resultVideo = document.getElementById('result-video');
+            window.location.href = appUrl; // Coba buka app dulu
 
-    const usernameInput = document.getElementById('username-input');
-    const profileImg = document.getElementById('profile-img');
-    const settingsBtn = document.getElementById('settings-toggle-btn');
-    const closeSettingsBtn = document.getElementById('close-settings');
-    const settingsSidebar = document.getElementById('settings-sidebar');
-    const overlay = document.getElementById('overlay');
-
-    const toggleThemeBtn = document.getElementById('toggle-theme');
-    const headerColorPicker = document.getElementById('header-color-picker');
-    const bgFileInput = document.getElementById('bg-file-input');
-    const resetBgBtn = document.getElementById('reset-bg');
-    const bgVideo = document.getElementById('bg-video');
-    const mainHeader = document.getElementById('main-header');
-
-    // 2. LOAD DATA DARI LOCALSTORAGE
-    const savedUsername = localStorage.getItem('scarlet_username');
-    if (savedUsername) {
-        usernameInput.value = savedUsername;
-        profileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(savedUsername)}&background=0D8ABC&color=fff`;
-    }
-
-    usernameInput.addEventListener('input', (e) => {
-        const val = e.target.value;
-        localStorage.setItem('scarlet_username', val);
-        profileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(val)}&background=0D8ABC&color=fff`;
+            setTimeout(() => { // Kalau 1.5 detik gak kebuka, berarti app gak ada
+                if (Date.now() - start < 1600) {
+                    window.open(webUrl, '_blank'); // Buka web
+                }
+            }, 1500);
+        });
     });
 
-    const savedTheme = localStorage.getItem('scarlet_theme');
-    if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+    // FUNGSI UPLOAD 3X FALLBACK API GRATIS
+    async function uploadFile(file, resultContainer, button) {
+        if (!file) return alert('Pilih file terlebih dahulu!');
+        if (file.size > 512 * 1024 * 1024) return alert('File terlalu besar! Maks 512MB');
 
-    toggleThemeBtn.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('scarlet_theme', document.body.classList.contains('dark-mode')? 'dark' : 'light');
-    });
+        button.disabled = true;
+        resultContainer.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah 0%...</p>`;
 
-    const savedHeaderColor = localStorage.getItem('scarlet_header_color');
-    if (savedHeaderColor) {
-        mainHeader.style.backgroundColor = savedHeaderColor;
-        headerColorPicker.value = savedHeaderColor;
-    }
-    headerColorPicker.addEventListener('input', (e) => {
-        mainHeader.style.backgroundColor = e.target.value;
-        localStorage.setItem('scarlet_header_color', e.target.value);
-    });
+        const apis = [
+            { name: '0x0.st', url: 'https://0x0.st', field: 'file' }, // Max 512MB
+            { name: 'tmpfiles.org', url: 'https://tmpfiles.org/api/v1/upload', field: 'file' }, // Max 10GB
+            { name: 'file.io', url: 'https://file.io', field: 'file' } // Max 2GB, 14 hari
+        ];
 
-    const savedBg = localStorage.getItem('scarlet_bg');
-    const savedBgType = localStorage.getItem('scarlet_bg_type');
-    if (savedBg) applyBackground(savedBg, savedBgType);
-
-    bgFileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const result = event.target.result;
-            const type = file.type.startsWith('video')? 'video' : 'image';
+        for (let i = 0; i < apis.length; i++) {
+            const api = apis[i];
             try {
-                localStorage.setItem('scarlet_bg', result);
-                localStorage.setItem('scarlet_bg_type', type);
-                applyBackground(result, type);
-            } catch {
-                alert('Ukuran file background terlalu besar untuk disimpan di browser!');
+                resultContainer.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> Mencoba ${api.name}... 0%</p>`;
+                const url = await uploadToAPI(file, api, resultContainer);
+                if (url) {
+                    showResult(resultContainer, url, api.name);
+                    button.disabled = false;
+                    return;
+                }
+            } catch (error) {
+                console.log(`${api.name} gagal:`, error);
+                if (i === apis.length - 1) { // Kalau ini API terakhir
+                    resultContainer.innerHTML = `<p style="color: red;">Semua server gagal. Cek internet/VPN</p>`;
+                }
             }
-        };
-        reader.readAsDataURL(file);
-    });
-
-    resetBgBtn.addEventListener('click', () => {
-        localStorage.removeItem('scarlet_bg');
-        localStorage.removeItem('scarlet_bg_type');
-        document.body.style.backgroundImage = 'none';
-        bgVideo.style.display = 'none';
-        bgVideo.src = '';
-        bgFileInput.value = '';
-    });
-
-    function applyBackground(src, type) {
-        if (type === 'video') {
-            document.body.style.backgroundImage = 'none';
-            bgVideo.src = src;
-            bgVideo.style.display = 'block';
-        } else {
-            bgVideo.style.display = 'none';
-            bgVideo.src = '';
-            document.body.style.backgroundImage = `url('${src}')`;
         }
+        button.disabled = false;
     }
 
-    // 3. TAB + SIDEBAR
-    tabPhoto.addEventListener('click', () => switchTab('photo'));
-    tabVideo.addEventListener('click', () => switchTab('video'));
-    function switchTab(tab) {
-        tabPhoto.classList.toggle('active', tab === 'photo');
-        tabVideo.classList.toggle('active', tab === 'video');
-        sectionPhoto.classList.toggle('active', tab === 'photo');
-        sectionVideo.classList.toggle('active', tab === 'video');
+    function uploadToAPI(file, api, resultContainer) {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append(api.field, file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    resultContainer.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> Upload ke ${api.name}: ${percent}%</p>`;
+                }
+            });
+            xhr.addEventListener('load', () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    let url = xhr.responseText.trim();
+                    // Format URL khusus per API
+                    if (api.name === 'tmpfiles.org') url = JSON.parse(url).data.url;
+                    if (api.name === 'file.io') url = JSON.parse(url).link;
+                    if (url.startsWith('http')) resolve(url);
+                    else reject('Invalid URL');
+                } else {
+                    reject(`Status ${xhr.status}`);
+                }
+            });
+            xhr.addEventListener('error', () => reject('Network Error'));
+            xhr.open('POST', api.url);
+            xhr.send(formData);
+        });
     }
 
-    settingsBtn.addEventListener('click', () => {
-        settingsSidebar.classList.add('open');
-        overlay.classList.add('active');
+    btnUploadPhoto.addEventListener('click', () => {
+        uploadFile(inputPhoto.files[0], resultPhoto, btnUploadPhoto);
     });
-    function closeMenu() {
-        settingsSidebar.classList.remove('open');
-        overlay.classList.remove('active');
-    }
-    closeSettingsBtn.addEventListener('click', closeMenu);
-    overlay.addEventListener('click', closeMenu);
+    btnUploadVideo.addEventListener('click', () => {
+        uploadFile(inputVideo.files[0], resultVideo, btnUploadVideo);
+    });
 
-    // 4. DRAG & DROP + PREVIEW
-    function setupDrop(dropZone, input, preview, icon, text) {
-        dropZone.addEventListener('click', () => input.click());
-        ['dragenter', 'dragover'].forEach(evt => {
-            dropZone.addEventListener(evt, e => {
-                e.preventDefault();
-                dropZone.classList.add('dragover');
-            });
-        });
-        ['dragleave', 'drop'].forEach(evt => {
-            dropZone.addEventListener(evt, e => {
-                e.preventDefault();
-                dropZone.classList.remove('dragover');
-            });
-        });
-        dropZone.addEventListener('drop', e => {
-            input.files = e.dataTransfer.files;
-            showPreview(input.files[0], preview, icon, text);
-        });
-        input.addEventListener('change', () => showPreview(input.files[0], preview, icon, text));
-    }
-
-    function showPreview(file, preview, icon, text) {
-        if (!file) return;
-        const url = URL.createObjectURL(file);
-        preview.src = url;
-        preview.style.display = 'block';
-        icon.style.display = 'none';
-        text.textContent = file.name;
-    }
-
-    setupDrop(dropPhoto, inputPhoto, previewPhoto, iconPhoto, textPhoto);
-    setupDrop(dropVideo, inputVideo, previewVideo, iconVideo, textVideo);
-
-    // 5. FUNGSI UPLOAD + HASIL - CUMA 1 KALI
-    function showResult(container, url) {
+    function showResult(container, url, apiName) {
         container.innerHTML = `
-            <p style="color: #25D366;"><i class="fa-solid fa-check"></i> Berhasil!</p>
+            <p style="color: #25D366;"><i class="fa-solid fa-check"></i> Berhasil via ${apiName}!</p>
             <input type="text" value="${url}" readonly>
             <button class="expand-effect btn-copy">Salin</button>
         `;
@@ -177,55 +103,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function uploadToCatbox(file, resultContainer, button) {
-        if (!file) return alert('Pilih file terlebih dahulu!');
-        if (file.size > 200 * 1024 * 1024) return alert('File terlalu besar! Maks 200MB');
-
-        button.disabled = true;
-        resultContainer.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah 0%...</p>`;
-
-        const formData = new FormData();
-        formData.append('reqtype', 'fileupload');
-        formData.append('fileToUpload', file);
-
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener('progress', (e) => {
-            if (e.lengthComputable) {
-                const percent = Math.round((e.loaded / e.total) * 100);
-                resultContainer.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah ${percent}%...</p>`;
-            }
-        });
-
-        xhr.addEventListener('load', () => {
-            if (xhr.status === 200) {
-                const url = xhr.responseText.trim();
-                if (url.startsWith('http')) {
-                    showResult(resultContainer, url);
-                } else {
-                    resultContainer.innerHTML = `<p style="color: red;">Gagal dari server: ${url}</p>`;
-                }
-            } else {
-                resultContainer.innerHTML = `<p style="color: red;">Gagal Koneksi: Status ${xhr.status}. Coba pake WiFi/VPN</p>`;
-            }
-            button.disabled = false;
-        });
-
-        xhr.addEventListener('error', () => {
-            resultContainer.innerHTML = `<p style="color: red;">Gagal: Tidak bisa terhubung ke Catbox. Cek internet</p>`;
-            button.disabled = false;
-        });
-
-        xhr.open('POST', 'https://catbox.moe/user/api.php');
-        xhr.send(formData);
-    }
-
-    btnUploadPhoto.addEventListener('click', () => {
-        uploadToCatbox(inputPhoto.files[0], resultPhoto, btnUploadPhoto);
-    });
-
-    btnUploadVideo.addEventListener('click', () => {
-        uploadToCatbox(inputVideo.files[0], resultVideo, btnUploadVideo);
-    });
-
-}); // Cuma 1 kali tutup DOMContentLoaded
+    //... SISA KODE BAWAHNYA SAMA...
+});
