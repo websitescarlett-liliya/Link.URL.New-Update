@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. AMBIL SEMUA ELEMENT
     const tabPhoto = document.getElementById('tab-photo');
     const tabVideo = document.getElementById('tab-video');
     const sectionPhoto = document.getElementById('section-photo');
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgVideo = document.getElementById('bg-video');
     const mainHeader = document.getElementById('main-header');
 
+    // 2. LOAD DATA DARI LOCALSTORAGE
     const savedUsername = localStorage.getItem('scarlet_username');
     if (savedUsername) {
         usernameInput.value = savedUsername;
@@ -107,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 3. TAB + SIDEBAR
     tabPhoto.addEventListener('click', () => switchTab('photo'));
     tabVideo.addEventListener('click', () => switchTab('video'));
     function switchTab(tab) {
@@ -127,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeSettingsBtn.addEventListener('click', closeMenu);
     overlay.addEventListener('click', closeMenu);
 
+    // 4. DRAG & DROP + PREVIEW
     function setupDrop(dropZone, input, preview, icon, text) {
         dropZone.addEventListener('click', () => input.click());
         ['dragenter', 'dragover'].forEach(evt => {
@@ -160,44 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDrop(dropPhoto, inputPhoto, previewPhoto, iconPhoto, textPhoto);
     setupDrop(dropVideo, inputVideo, previewVideo, iconVideo, textVideo);
 
-    async function uploadToCatbox(file, resultContainer, button) {
-        if (!file) return alert('Pilih file terlebih dahulu!');
-        if (file.size > 200 * 1024 * 1024) return alert('File terlalu besar! Maks 200MB');
-
-        button.disabled = true;
-        resultContainer.innerHTML = '<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah ke Catbox...</p>';
-
-        const formData = new FormData();
-        formData.append('reqtype', 'fileupload');
-        formData.append('fileToUpload', file);
-
-        try {
-            const res = await fetch('https://catbox.moe/user/api.php', {
-                method: 'POST',
-                body: formData
-            });
-            const url = await res.text();
-            if (url.startsWith('http')) {
-                showResult(resultContainer, url);
-            } else {
-                resultContainer.innerHTML = `<p style="color: red;">Gagal: ${url}</p>`;
-            }
-        } catch (error) {
-            console.error(error);
-            resultContainer.innerHTML = `<p style="color: red;">Gagal: ${error.message}. Coba ganti jaringan/WiFi</p>`;
-        } finally {
-            button.disabled = false;
-        }
-    }
-
-    btnUploadPhoto.addEventListener('click', () => {
-        uploadToCatbox(inputPhoto.files[0], resultPhoto, btnUploadPhoto);
-    });
-
-    btnUploadVideo.addEventListener('click', () => {
-        uploadToCatbox(inputVideo.files[0], resultVideo, btnUploadVideo);
-    });
-
+    // 5. FUNGSI UPLOAD + HASIL - CUMA 1 KALI
     function showResult(container, url) {
         container.innerHTML = `
             <p style="color: #25D366;"><i class="fa-solid fa-check"></i> Berhasil!</p>
@@ -209,4 +176,56 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('URL Berhasil Disalin!');
         });
     }
-});
+
+    async function uploadToCatbox(file, resultContainer, button) {
+        if (!file) return alert('Pilih file terlebih dahulu!');
+        if (file.size > 200 * 1024 * 1024) return alert('File terlalu besar! Maks 200MB');
+
+        button.disabled = true;
+        resultContainer.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah 0%...</p>`;
+
+        const formData = new FormData();
+        formData.append('reqtype', 'fileupload');
+        formData.append('fileToUpload', file);
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                resultContainer.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah ${percent}%...</p>`;
+            }
+        });
+
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+                const url = xhr.responseText.trim();
+                if (url.startsWith('http')) {
+                    showResult(resultContainer, url);
+                } else {
+                    resultContainer.innerHTML = `<p style="color: red;">Gagal dari server: ${url}</p>`;
+                }
+            } else {
+                resultContainer.innerHTML = `<p style="color: red;">Gagal Koneksi: Status ${xhr.status}. Coba pake WiFi/VPN</p>`;
+            }
+            button.disabled = false;
+        });
+
+        xhr.addEventListener('error', () => {
+            resultContainer.innerHTML = `<p style="color: red;">Gagal: Tidak bisa terhubung ke Catbox. Cek internet</p>`;
+            button.disabled = false;
+        });
+
+        xhr.open('POST', 'https://catbox.moe/user/api.php');
+        xhr.send(formData);
+    }
+
+    btnUploadPhoto.addEventListener('click', () => {
+        uploadToCatbox(inputPhoto.files[0], resultPhoto, btnUploadPhoto);
+    });
+
+    btnUploadVideo.addEventListener('click', () => {
+        uploadToCatbox(inputVideo.files[0], resultVideo, btnUploadVideo);
+    });
+
+}); // Cuma 1 kali tutup DOMContentLoaded
