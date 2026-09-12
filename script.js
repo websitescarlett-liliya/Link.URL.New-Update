@@ -1,12 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // === ELEMENT REFERENCES ===
+    // Elements
     const tabPhoto = document.getElementById('tab-photo');
     const tabVideo = document.getElementById('tab-video');
     const sectionPhoto = document.getElementById('section-photo');
     const sectionVideo = document.getElementById('section-video');
-    
+
     const inputPhoto = document.getElementById('input-photo');
     const inputVideo = document.getElementById('input-video');
+    const dropPhoto = document.getElementById('drop-photo');
+    const dropVideo = document.getElementById('drop-video');
+    const previewPhoto = document.getElementById('preview-photo');
+    const previewVideo = document.getElementById('preview-video');
+    const iconPhoto = document.getElementById('icon-photo');
+    const iconVideo = document.getElementById('icon-video');
+    const textPhoto = document.getElementById('text-photo');
+    const textVideo = document.getElementById('text-video');
+
     const btnUploadPhoto = document.getElementById('btn-upload-photo');
     const btnUploadVideo = document.getElementById('btn-upload-video');
     const resultPhoto = document.getElementById('result-photo');
@@ -18,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeSettingsBtn = document.getElementById('close-settings');
     const settingsSidebar = document.getElementById('settings-sidebar');
     const overlay = document.getElementById('overlay');
-    
+
     const toggleThemeBtn = document.getElementById('toggle-theme');
     const headerColorPicker = document.getElementById('header-color-picker');
     const bgFileInput = document.getElementById('bg-file-input');
@@ -26,8 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgVideo = document.getElementById('bg-video');
     const mainHeader = document.getElementById('main-header');
 
-    // === 1. LOCAL STORAGE PERSISTENCE (Username & Theme & Bg) ===
-    // Load Username
+    // Load data dari localStorage
     const savedUsername = localStorage.getItem('scarlet_username');
     if (savedUsername) {
         usernameInput.value = savedUsername;
@@ -40,52 +48,40 @@ document.addEventListener('DOMContentLoaded', () => {
         profileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(val)}&background=0D8ABC&color=fff`;
     });
 
-    // Load Theme Mode
     const savedTheme = localStorage.getItem('scarlet_theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-    }
+    if (savedTheme === 'dark') document.body.classList.add('dark-mode');
 
     toggleThemeBtn.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('scarlet_theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('scarlet_theme', document.body.classList.contains('dark-mode')? 'dark' : 'light');
     });
 
-    // Load Header Color
     const savedHeaderColor = localStorage.getItem('scarlet_header_color');
     if (savedHeaderColor) {
         mainHeader.style.backgroundColor = savedHeaderColor;
         headerColorPicker.value = savedHeaderColor;
     }
-
     headerColorPicker.addEventListener('input', (e) => {
-        const color = e.target.value;
-        mainHeader.style.backgroundColor = color;
-        localStorage.setItem('scarlet_header_color', color);
+        mainHeader.style.backgroundColor = e.target.value;
+        localStorage.setItem('scarlet_header_color', e.target.value);
     });
 
-    // Load Custom Background (Photo / Video)
     const savedBg = localStorage.getItem('scarlet_bg');
     const savedBgType = localStorage.getItem('scarlet_bg_type');
-    if (savedBg) {
-        applyBackground(savedBg, savedBgType);
-    }
+    if (savedBg) applyBackground(savedBg, savedBgType);
 
     bgFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = (event) => {
             const result = event.target.result;
-            const type = file.type.startsWith('video') ? 'video' : 'image';
-            
+            const type = file.type.startsWith('video')? 'video' : 'image';
             try {
                 localStorage.setItem('scarlet_bg', result);
                 localStorage.setItem('scarlet_bg_type', type);
                 applyBackground(result, type);
-            } catch (err) {
+            } catch {
                 alert('Ukuran file background terlalu besar untuk disimpan di browser!');
             }
         };
@@ -98,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.backgroundImage = 'none';
         bgVideo.style.display = 'none';
         bgVideo.src = '';
+        bgFileInput.value = '';
     });
 
     function applyBackground(src, type) {
@@ -112,100 +109,137 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // === 2. TAB SWAPPING (Geser Kanan & Geser Kiri) ===
-    tabPhoto.addEventListener('click', () => {
-        tabPhoto.classList.add('active');
-        tabVideo.classList.remove('active');
-        sectionPhoto.classList.add('active');
-        sectionVideo.classList.remove('active');
-    });
+    // Tab switching
+    tabPhoto.addEventListener('click', () => switchTab('photo'));
+    tabVideo.addEventListener('click', () => switchTab('video'));
+    function switchTab(tab) {
+        tabPhoto.classList.toggle('active', tab === 'photo');
+        tabVideo.classList.toggle('active', tab === 'video');
+        sectionPhoto.classList.toggle('active', tab === 'photo');
+        sectionVideo.classList.toggle('active', tab === 'video');
+    }
 
-    tabVideo.addEventListener('click', () => {
-        tabVideo.classList.add('active');
-        tabPhoto.classList.remove('active');
-        sectionVideo.classList.add('active');
-        sectionPhoto.classList.remove('active');
-    });
-
-    // === 3. SETTINGS SIDEBAR TOGGLE ===
+    // Sidebar
     settingsBtn.addEventListener('click', () => {
         settingsSidebar.classList.add('open');
         overlay.classList.add('active');
     });
-
-    closeSettingsBtn.addEventListener('click', closeMenu);
-    overlay.addEventListener('click', closeMenu);
-
     function closeMenu() {
         settingsSidebar.classList.remove('open');
         overlay.classList.remove('active');
     }
+    closeSettingsBtn.addEventListener('click', closeMenu);
+    overlay.addEventListener('click', closeMenu);
 
-    // === 4. API UPLOAD LOGIC (API Gratis ImgBB & Catbox) ===
+    // Drag & Drop + Preview
+    function setupDrop(dropZone, input, preview, icon, text) {
+        dropZone.addEventListener('click', () => input.click());
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, e => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, e => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            });
+        });
+        dropZone.addEventListener('drop', e => {
+            input.files = e.dataTransfer.files;
+            showPreview(input.files[0], preview, icon, text);
+        });
+        input.addEventListener('change', () => showPreview(input.files[0], preview, icon, text));
+    }
 
-    // Upload Foto via API (Free ImgBB)
-    btnUploadPhoto.addEventListener('click', () => {
+    function showPreview(file, preview, icon, text) {
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        if (file.type.startsWith('image')) {
+            preview.src = url;
+            preview.style.display = 'block';
+            icon.style.display = 'none';
+            text.textContent = file.name;
+        } else {
+            preview.src = url;
+            preview.style.display = 'block';
+            icon.style.display = 'none';
+            text.textContent = file.name;
+        }
+    }
+
+    setupDrop(dropPhoto, inputPhoto, previewPhoto, iconPhoto, textPhoto);
+    setupDrop(dropVideo, inputVideo, previewVideo, iconVideo, textVideo);
+
+    // Upload Foto ke ImgBB
+    btnUploadPhoto.addEventListener('click', async () => {
         const file = inputPhoto.files[0];
         if (!file) return alert('Pilih foto terlebih dahulu!');
 
+        btnUploadPhoto.disabled = true;
         resultPhoto.innerHTML = '<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah foto...</p>';
 
         const formData = new FormData();
         formData.append('image', file);
 
-        // Gratis API Key ImgBB
-        fetch('https://api.imgbb.com/1/upload?key=6d2578c47486241a740751e18ff1fb76', {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
+        try {
+            const res = await fetch('https://api.imgbb.com/1/upload?key=6d2578c47486241a740751e18ff1fb76', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
             if (data.success) {
-                const url = data.data.url;
-                resultPhoto.innerHTML = `
-                    <p style="color: green;">Berhasil!</p>
-                    <input type="text" value="${url}" readonly id="photo-url-input">
-                    <button onclick="navigator.clipboard.writeText('${url}'); alert('URL Foto Berhasil Disalin!')" class="expand-effect">Salin</button>
-                `;
+                showResult(resultPhoto, data.data.url);
             } else {
                 resultPhoto.innerHTML = '<p style="color: red;">Gagal mengunggah foto.</p>';
             }
-        })
-        .catch(() => {
+        } catch {
             resultPhoto.innerHTML = '<p style="color: red;">Terjadi kesalahan koneksi.</p>';
-        });
+        } finally {
+            btnUploadPhoto.disabled = false;
+        }
     });
 
-    // Upload Video via API (Free Catbox API)
-    btnUploadVideo.addEventListener('click', () => {
+    // Upload Video ke Catbox
+    btnUploadVideo.addEventListener('click', async () => {
         const file = inputVideo.files[0];
         if (!file) return alert('Pilih video terlebih dahulu!');
 
+        btnUploadVideo.disabled = true;
         resultVideo.innerHTML = '<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah video...</p>';
 
         const formData = new FormData();
         formData.append('reqtype', 'fileupload');
         formData.append('fileToUpload', file);
 
-        // Gratis API Catbox (Mendukung upload Video & Media)
-        fetch('https://catbox.moe/user/api.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.text())
-        .then(url => {
+        try {
+            const res = await fetch('https://catbox.moe/user/api.php', {
+                method: 'POST',
+                body: formData
+            });
+            const url = await res.text();
             if (url.startsWith('http')) {
-                resultVideo.innerHTML = `
-                    <p style="color: green;">Berhasil!</p>
-                    <input type="text" value="${url}" readonly id="video-url-input">
-                    <button onclick="navigator.clipboard.writeText('${url}'); alert('URL Video Berhasil Disalin!')" class="expand-effect">Salin</button>
-                `;
+                showResult(resultVideo, url);
             } else {
                 resultVideo.innerHTML = '<p style="color: red;">Gagal mengunggah video.</p>';
             }
-        })
-        .catch(() => {
+        } catch {
             resultVideo.innerHTML = '<p style="color: red;">Terjadi kesalahan koneksi.</p>';
-        });
+        } finally {
+            btnUploadVideo.disabled = false;
+        }
     });
+
+    function showResult(container, url) {
+        container.innerHTML = `
+            <p style="color: green;"><i class="fa-solid fa-check"></i> Berhasil!</p>
+            <input type="text" value="${url}" readonly>
+            <button class="expand-effect btn-copy">Salin</button>
+        `;
+        container.querySelector('.btn-copy').addEventListener('click', () => {
+            navigator.clipboard.writeText(url);
+            alert('URL Berhasil Disalin!');
+        });
+    }
 });
