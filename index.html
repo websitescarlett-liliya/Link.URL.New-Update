@@ -5,23 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload V/F To URL</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="light-mode">
-    <!-- Background Video Container -->
-    <video id="bg-video" autoplay loop muted style="display: none;"></video>
-    
+<body>
+    <video id="bg-video" autoplay loop muted playsinline style="display: none;"></video>
+
     <div class="app-container">
-        <!-- Header Section -->
         <header id="main-header">
             <div class="search-title">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <span>Website Scarlet Upload V/F To URL</span>
             </div>
-            
+
             <div class="user-bar">
-                <button class="access-btn"><i class="fa-solid fa-key"></i> Website Akses Kusus</button>
+                <button class="access-btn"><i class="fa-solid fa-key"></i> Website Akses Khusus</button>
                 <div class="profile-section">
                     <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" id="profile-img" alt="Profile">
                     <input type="text" id="username-input" value="UserScarlet" title="Klik untuk ubah username">
@@ -30,9 +27,7 @@
             </div>
         </header>
 
-        <!-- Main Content Area -->
         <main>
-            <!-- Navigation Sliders/Tabs -->
             <div class="tab-navigation">
                 <button id="tab-photo" class="tab-btn expand-effect active">
                     <i class="fa-solid fa-image"></i> Geser Kiri: Upload Foto
@@ -42,55 +37,51 @@
                 </button>
             </div>
 
-            <!-- Card Upload Foto (Geser Kiri / Default Active) -->
             <section id="section-photo" class="upload-card active">
                 <h2><i class="fa-solid fa-camera"></i> Upload Foto ke URL</h2>
                 <p>Pilih atau drag & drop foto Anda di bawah ini</p>
                 <input type="file" id="input-photo" accept="image/*" hidden>
-                <div class="drop-zone" onclick="document.getElementById('input-photo').click()">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <p>Klik atau Seret Foto ke Sini</p>
+                <div class="drop-zone" id="drop-photo">
+                    <img id="preview-photo" class="preview-img" style="display:none;">
+                    <i class="fa-solid fa-cloud-arrow-up" id="icon-photo"></i>
+                    <p id="text-photo">Klik atau Seret Foto ke Sini</p>
                 </div>
                 <button id="btn-upload-photo" class="action-btn expand-effect">Upload Foto</button>
                 <div id="result-photo" class="result-box"></div>
             </section>
 
-            <!-- Card Upload Video (Geser Kanan) -->
             <section id="section-video" class="upload-card">
                 <h2><i class="fa-solid fa-film"></i> Upload Video ke URL</h2>
                 <p>Pilih atau drag & drop video Anda di bawah ini</p>
                 <input type="file" id="input-video" accept="video/*" hidden>
-                <div class="drop-zone" onclick="document.getElementById('input-video').click()">
-                    <i class="fa-solid fa-file-video"></i>
-                    <p>Klik atau Seret Video ke Sini</p>
+                <div class="drop-zone" id="drop-video">
+                    <video id="preview-video" class="preview-video" controls style="display:none;"></video>
+                    <i class="fa-solid fa-file-video" id="icon-video"></i>
+                    <p id="text-video">Klik atau Seret Video ke Sini</p>
                 </div>
                 <button id="btn-upload-video" class="action-btn expand-effect">Upload Video</button>
                 <div id="result-video" class="result-box"></div>
             </section>
         </main>
 
-        <!-- Sidebar / Modal Settings -->
         <aside id="settings-sidebar" class="sidebar">
             <div class="sidebar-header">
                 <h3><i class="fa-solid fa-sliders"></i> Pengaturan Website</h3>
                 <button id="close-settings" class="icon-btn">&times;</button>
             </div>
             <div class="sidebar-content">
-                <!-- 1. Mode Light/Dark -->
                 <div class="setting-item">
                     <label><i class="fa-solid fa-moon"></i> Mode Tampilan</label>
                     <button id="toggle-theme" class="expand-effect">Ganti Mode (Dark/Light)</button>
                 </div>
 
-                <!-- 2. Chat Admin (WhatsApp) -->
                 <div class="setting-item">
                     <label><i class="fa-solid fa-headset"></i> Laporkan Error/Bug</label>
-                    <a href="https://wa.me/88801883795?text=Halo%20Admin,%20saya%20menemukan%20error/bug%20di%20website%20Upload%20VF%20To%20URL" target="_blank" class="admin-btn expand-effect">
+                    <a href="https://wa.me/6288801883795?text=Halo%20Admin,%20saya%20menemukan%20error/bug%20di%20website%20Upload%20VF%20To%20URL" target="_blank" class="admin-btn expand-effect">
                         <i class="fa-brands fa-whatsapp"></i> Chat Admin
                     </a>
                 </div>
 
-                <!-- 3. Search Google -->
                 <div class="setting-item">
                     <label><i class="fa-brands fa-google"></i> Cari di Google</label>
                     <form action="https://www.google.com/search" method="get" target="_blank" class="search-form">
@@ -99,7 +90,6 @@
                     </form>
                 </div>
 
-                <!-- 4. Quick Links (Codepen, Github, Spotify) -->
                 <div class="setting-item">
                     <label><i class="fa-solid fa-link"></i> Pintasan Web</label>
                     <div class="shortcut-buttons">
@@ -109,13 +99,11 @@
                     </div>
                 </div>
 
-                <!-- 5. Ganti Color Header -->
                 <div class="setting-item">
                     <label><i class="fa-solid fa-palette"></i> Ganti Warna Header</label>
                     <input type="color" id="header-color-picker" value="#ffffff">
                 </div>
 
-                <!-- 6. Ganti Background Galeri (Foto / Video) -->
                 <div class="setting-item">
                     <label><i class="fa-solid fa-image"></i> Custom Background (Galeri)</label>
                     <input type="file" id="bg-file-input" accept="image/*,video/*">
@@ -128,4 +116,4 @@
 
     <script src="script.js"></script>
 </body>
-</html>
+                    </html>
