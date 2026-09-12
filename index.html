@@ -1,160 +1,142 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload V/F To URL</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload V/F To URL — Scarlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-<body class="light-mode">
-    <!-- Background Video Container -->
-    <video id="bg-video" autoplay loop muted style="display: none;"></video>
-    
-    <div class="app-container">
-        <!-- Header Section -->
-        <header id="main-header" class="float-element">
-            <div class="search-title">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <span>Website Scarlet Upload V/F To URL</span>
-            </div>
-            
-            <div class="user-bar">
-                <button class="access-btn expand-effect float-btn">
-                    <i class="fa-solid fa-key"></i> Website Akses Kusus
-                </button>
-                <div class="profile-section">
-                    <img src="https://ui-avatars.com/api/?name=User&background=000&color=fff" id="profile-img" alt="Profile">
-                    <input type="text" id="username-input" value="UserScarlet" title="Klik untuk ubah username">
-                    <button id="settings-toggle-btn" class="icon-btn expand-effect float-btn" title="Pengaturan">
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
+<body>
 
-        <!-- Main Content Area -->
-        <main>
-            <!-- Navigation Sliders/Tabs dengan Animasi Geser -->
-            <div class="tab-navigation">
-                <button id="tab-photo" class="tab-btn expand-effect float-btn active">
-                    <i class="fa-solid fa-image"></i> Geser Kiri: Upload Foto
-                </button>
-                <button id="tab-video" class="tab-btn expand-effect float-btn">
-                    <i class="fa-solid fa-video"></i> Geser Kanan: Upload Video
-                </button>
-            </div>
+<div id="bg-layer"></div>
+<div id="bg-overlay"></div>
 
-            <!-- Card Upload Foto (Geser Kiri / Default) -->
-            <section id="section-photo" class="upload-card active slide-left">
-                <h2><i class="fa-solid fa-camera"></i> Upload Foto ke URL</h2>
-                <p>Pilih foto dari galeri untuk dijadikan Link URL Publik</p>
-                <input type="file" id="input-photo" accept="image/*" hidden>
-                <div class="drop-zone" onclick="document.getElementById('input-photo').click()">
-                    <i class="fa-solid fa-cloud-arrow-up float-element"></i>
-                    <p>Klik atau Seret Foto ke Sini</p>
-                    <span id="file-photo-name" class="file-name-tag"></span>
-                </div>
-                <button id="btn-upload-photo" class="action-btn expand-effect float-btn">
-                    <i class="fa-solid fa-bolt"></i> Upload Foto
-                </button>
-                <div id="result-photo" class="result-box"></div>
-            </section>
+<header class="topbar">
+  <div class="search-title">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="7"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <span>Website Scarlet Upload V/F To URL</span>
+  </div>
+</header>
 
-            <!-- Card Upload Video (Geser Kanan) -->
-            <section id="section-video" class="upload-card slide-right">
-                <h2><i class="fa-solid fa-film"></i> Upload Video ke URL</h2>
-                <p>Pilih video dari galeri untuk dijadikan Link URL Publik</p>
-                <input type="file" id="input-video" accept="video/*" hidden>
-                <div class="drop-zone" onclick="document.getElementById('input-video').click()">
-                    <i class="fa-solid fa-file-video float-element"></i>
-                    <p>Klik atau Seret Video ke Sini</p>
-                    <span id="file-video-name" class="file-name-tag"></span>
-                </div>
-                <button id="btn-upload-video" class="action-btn expand-effect float-btn">
-                    <i class="fa-solid fa-bolt"></i> Upload Video
-                </button>
-                <div id="result-video" class="result-box"></div>
-            </section>
-        </main>
+<div class="subbar">
+  <button id="akses-khusus-btn" class="pill-btn float-btn">Website Akses Kusus</button>
 
-        <!-- Menu Settings / Sidebar -->
-        <aside id="settings-sidebar" class="sidebar">
-            <div class="sidebar-header">
-                3.<h3><i class="fa-solid fa-sliders"></i> Menu Pengaturan</h3>
-                <button id="close-settings" class="icon-btn float-btn">&times;</button>
-            </div>
-            <div class="sidebar-content">
-                <!-- Mode Light/Dark -->
-                <div class="setting-item">
-                    <label><i class="fa-solid fa-circle-half-stroke"></i> Mode Tampilan</label>
-                    <button id="toggle-theme" class="expand-effect float-btn">Ganti Mode (Light/Dark)</button>
-                </div>
+  <div class="profile" id="profile" title="Ganti foto profil / nama">
+    <div class="avatar" id="avatar">
+      <span id="avatar-fallback">S</span>
+    </div>
+    <span class="username" id="username" contenteditable="false" spellcheck="false">Pengguna</span>
+    <input type="file" id="avatar-input" accept="image/*" hidden>
+  </div>
+</div>
 
-                <!-- Chat Admin WA -->
-                <div class="setting-item">
-                    <label><i class="fa-solid fa-headset"></i> Laporkan Error/Bug</label>
-                    <a href="https://wa.me/6288801883795?text=Halo%20Admin,%20saya%20menemukan%20error/bug%20di%20website%20Upload%20VF%20To%20URL" target="_blank" class="admin-btn expand-effect float-btn">
-                        <i class="fa-brands fa-whatsapp"></i> Chat Admin (6288801883795)
-                    </a>
-                </div>
+<main class="main">
+  <section class="upload-card slide-right" id="video-card">
+    <div class="card-icon">🎬</div>
+    <h2>Upload Video</h2>
+    <p>Ubah video jadi sebuah tautan URL</p>
+    <button class="upload-btn bloom float-btn" id="video-btn">Pilih Video</button>
+    <input type="file" id="video-input" accept="video/*" hidden>
+    <div class="progress" id="video-progress" hidden><div class="bar" id="video-bar"></div></div>
+    <div class="result" id="video-result" hidden>
+      <input type="text" readonly id="video-url">
+      <button class="mini-btn" id="video-copy">Salin</button>
+    </div>
+    <p class="status" id="video-status"></p>
+  </section>
 
-                <!-- Search Google -->
-                <div class="setting-item">
-                    <label><i class="fa-brands fa-google"></i> Cari di Google</label>
-                    <form action="https://www.google.com/search" method="get" target="_blank" class="search-form">
-                        <input type="text" name="q" placeholder="Cari sesuatu di Google...">
-                        <button type="submit" class="expand-effect float-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
-                    </form>
-                </div>
+  <section class="upload-card slide-left" id="photo-card">
+    <div class="card-icon">🖼️</div>
+    <h2>Upload Foto</h2>
+    <p>Ubah foto jadi sebuah tautan URL</p>
+    <button class="upload-btn bloom float-btn" id="photo-btn">Pilih Foto</button>
+    <input type="file" id="photo-input" accept="image/*" hidden>
+    <div class="progress" id="photo-progress" hidden><div class="bar" id="photo-bar"></div></div>
+    <div class="result" id="photo-result" hidden>
+      <input type="text" readonly id="photo-url">
+      <button class="mini-btn" id="photo-copy">Salin</button>
+    </div>
+    <p class="status" id="photo-status"></p>
+  </section>
+</main>
 
-                <!-- Platform Pintasan Populer -->
-                <div class="setting-item">
-                    <label><i class="fa-solid fa-share-nodes"></i> Platform Populer & Lintasan</label>
-                    <div class="shortcut-grid">
-                        <button class="shortcut-btn expand-effect float-btn" onclick="openPlatform('x')"><i class="fa-brands fa-x-twitter"></i> X / Twitter</button>
-                        <button class="shortcut-btn expand-effect float-btn" onclick="openPlatform('tiktok')"><i class="fa-brands fa-tiktok"></i> TikTok</button>
-                        <button class="shortcut-btn expand-effect float-btn" onclick="openPlatform('instagram')"><i class="fa-brands fa-instagram"></i> Instagram</button>
-                        <button class="shortcut-btn expand-effect float-btn" onclick="openPlatform('youtube')"><i class="fa-brands fa-youtube"></i> YouTube</button>
-                        <button class="shortcut-btn expand-effect float-btn" onclick="openPlatform('facebook')"><i class="fa-brands fa-facebook"></i> Facebook</button>
-                        <button class="shortcut-btn expand-effect float-btn" onclick="openPlatform('telegram')"><i class="fa-brands fa-telegram"></i> Telegram</button>
-                        <button class="shortcut-btn expand-effect float-btn" onclick="openPlatform('codepen')"><i class="fa-brands fa-codepen"></i> CodePen</button>
-                        <button class="shortcut-btn expand-effect float-btn" onclick="openPlatform('github')"><i class="fa-brands fa-github"></i> GitHub</button>
-                        <button class="shortcut-btn expand-effect float-btn" onclick="openPlatform('spotify')"><i class="fa-brands fa-spotify"></i> Spotify</button>
-                    </div>
-                </div>
+<button id="settings-toggle" class="float-btn settings-fab" aria-label="Pengaturan">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+</button>
 
-                <!-- Ganti Color Header -->
-                <div class="setting-item">
-                    <label><i class="fa-solid fa-palette"></i> Ganti Warna Header</label>
-                    <input type="color" id="header-color-picker" value="#ffffff">
-                </div>
+<div id="overlay"></div>
 
-                <!-- Ganti Background Galeri -->
-                <div class="setting-item">
-                    <label><i class="fa-solid fa-file-image"></i> Custom Background (Foto/Video Galeri)</label>
-                    <input type="file" id="bg-file-input" accept="image/*,video/*">
-                    <button id="reset-bg" class="expand-effect float-btn danger-btn">Reset Background</button>
-                </div>
-            </div>
-        </aside>
+<aside id="settings-panel" class="settings-panel">
+  <div class="settings-header">
+    <h3>Pengaturan</h3>
+    <button id="settings-close" class="icon-btn">&times;</button>
+  </div>
 
-        <!-- In-App Web View Modal (Opsi Pengembang) -->
-        <div id="webview-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span id="webview-title">Web View Platform</span>
-                    <button id="close-webview" class="icon-btn">&times;</button>
-                </div>
-                <iframe id="webview-iframe" src="" frameborder="0"></iframe>
-            </div>
-        </div>
+  <div class="settings-body">
 
-        <div id="overlay" class="overlay"></div>
+    <div class="setting-row">
+      <span>Mode Gelap</span>
+      <label class="switch">
+        <input type="checkbox" id="theme-toggle">
+        <span class="slider"></span>
+      </label>
     </div>
 
-    <script src="script.js"></script>
+    <div class="setting-row">
+      <span>Warna Aksen</span>
+      <input type="color" id="color-picker" value="#c81d3f">
+    </div>
+
+    <div class="setting-row column">
+      <span>Background Kustom (Galeri)</span>
+      <div class="row-buttons">
+        <button id="bg-picker-btn" class="mini-btn">Pilih Foto/Video</button>
+        <button id="reset-bg" class="mini-btn ghost">Reset</button>
+      </div>
+      <input type="file" id="bg-input" accept="image/*,video/*" hidden>
+    </div>
+
+    <h4>Bantuan</h4>
+    <button class="link-btn float-btn" id="chat-admin-btn">Chat Admin (Lapor Error / Bug)</button>
+
+    <h4>Jelajah Platform</h4>
+    <div class="platform-grid">
+      <button class="platform-btn float-btn" data-app="google">🔎 Google</button>
+      <button class="platform-btn float-btn" data-app="codepen">▲ CodePen</button>
+      <button class="platform-btn float-btn" data-app="github">🐙 GitHub</button>
+      <button class="platform-btn float-btn" data-app="spotify">🎧 Spotify</button>
+      <button class="platform-btn float-btn" data-app="tiktok">🎵 TikTok</button>
+      <button class="platform-btn float-btn" data-app="instagram">📸 Instagram</button>
+      <button class="platform-btn float-btn" data-app="x">✕ X</button>
+      <button class="platform-btn float-btn" data-app="claude">✦ Claude</button>
+      <button class="platform-btn float-btn" data-app="gemini">✧ Gemini</button>
+      <button class="platform-btn float-btn" data-app="youtube">▶ YouTube</button>
+      <button class="platform-btn float-btn" data-app="whatsapp">💬 WhatsApp</button>
+      <button class="platform-btn float-btn" data-app="telegram">✈ Telegram</button>
+    </div>
+
+  </div>
+</aside>
+
+<div id="akses-khusus-modal" class="modal">
+  <div class="modal-box">
+    <h3>Website Akses Khusus</h3>
+    <p>Fitur akses khusus untuk pengguna terpilih sedang disiapkan oleh tim Scarlet. Hubungi admin lewat menu Pengaturan untuk info lebih lanjut.</p>
+    <button id="akses-close" class="mini-btn">Tutup</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="script.js"></script>
 </body>
-                    </html>
-                    
+          </html>
+        
