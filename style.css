@@ -1,3 +1,4 @@
+/* RESET & DYNAMIC VARS (Hitam Text, Putih Background Default) */
 * {
     margin: 0;
     padding: 0;
@@ -8,10 +9,10 @@
 
 :root {
     --bg-color: #ffffff;
-    --text-color: #000;
-    --card-bg: #f5f5f5;
-    --border-color: #000;
-    --accent-color: #000;
+    --text-color: #000000;
+    --card-bg: #f9f9f9;
+    --border-color: #000000;
+    --accent-color: #000000;
     --btn-text: #ffffff;
 }
 
@@ -21,7 +22,7 @@ body.dark-mode {
     --card-bg: #1e1e1e;
     --border-color: #ffffff;
     --accent-color: #ffffff;
-    --btn-text: #000;
+    --btn-text: #000000;
 }
 
 body {
@@ -32,15 +33,16 @@ body {
     background-position: center;
     background-attachment: fixed;
     position: relative;
+    overflow-x: hidden;
 }
 
 #bg-video {
     position: fixed;
-    right: 0;
-    bottom: 0;
-    min-width: 100%;
-    min-height: 100%;
-    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
     object-fit: cover;
 }
 
@@ -50,20 +52,44 @@ body {
     padding: 20px;
 }
 
+/* EFEK MENGAPUNG (FLOATING ANIMATION) */
+@keyframes floating {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+.float-element {
+    animation: floating 3.5s ease-in-out infinite;
+}
+
+.float-btn {
+    animation: floating 4s ease-in-out infinite;
+}
+
+/* EFEK MENGEMBANG / SCALE BOUNCE ON HOVER */
 .expand-effect {
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s;
     cursor: pointer;
 }
-.expand-effect:hover { transform: scale(1.06); }
-.expand-effect:active { transform: scale(0.95); }
 
+.expand-effect:hover {
+    transform: scale(1.08) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.expand-effect:active {
+    transform: scale(0.92) !important;
+}
+
+/* HEADER STYLE */
 header {
     background: var(--card-bg);
     border: 2px solid var(--border-color);
     border-radius: 12px;
     padding: 15px 20px;
     margin-bottom: 25px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .search-title {
@@ -88,8 +114,8 @@ header {
 .access-btn {
     background-color: var(--accent-color);
     color: var(--btn-text);
-    border: none;
-    padding: 8px 15px;
+    border: 2px solid var(--border-color);
+    padding: 8px 16px;
     border-radius: 20px;
     font-weight: bold;
 }
@@ -99,49 +125,56 @@ header {
     align-items: center;
     gap: 10px;
 }
+
 .profile-section img {
-    width: 35px;
-    height: 35px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
 }
+
 #username-input {
     background: transparent;
-    border: 1px solid var(--border-color);
+    border: 1.5px solid var(--border-color);
     color: var(--text-color);
     padding: 5px 10px;
-    border-radius: 5px;
+    border-radius: 6px;
     font-weight: bold;
     width: 130px;
 }
+
 .icon-btn {
     background: none;
     border: none;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     color: var(--text-color);
     cursor: pointer;
 }
 
+/* TAB NAVIGATION & ANIMATION GESER */
 .tab-navigation {
     display: flex;
     justify-content: space-between;
     gap: 15px;
     margin-bottom: 20px;
 }
+
 .tab-btn {
     flex: 1;
-    padding: 12px;
+    padding: 14px;
     border: 2px solid var(--border-color);
     background: var(--card-bg);
     color: var(--text-color);
     font-weight: bold;
-    border-radius: 8px;
+    border-radius: 10px;
 }
+
 .tab-btn.active {
     background: var(--accent-color);
     color: var(--btn-text);
 }
 
+/* UPLOAD CARDS WITH SLIDE ANIMATION */
 .upload-card {
     display: none;
     background: var(--card-bg);
@@ -150,74 +183,102 @@ header {
     padding: 30px;
     text-align: center;
 }
+
 .upload-card.active {
     display: block;
-    animation: fadeIn 0.4s ease;
 }
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+
+.slide-left.active {
+    animation: slideInLeft 0.4s forwards ease-out;
+}
+
+.slide-right.active {
+    animation: slideInRight 0.4s forwards ease-out;
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-50px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(50px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 .drop-zone {
     border: 2px dashed var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: 10px;
+    padding: 40px;
     margin: 20px 0;
     cursor: pointer;
     background: rgba(0,0,0,0.02);
-    transition: background 0.2s;
 }
-.drop-zone.dragover { background: rgba(0,0,0,0.08); }
-.drop-zone i { font-size: 3rem; margin-bottom: 10px; }
 
-.preview-img,.preview-video {
-    max-width: 100%;
-    max-height: 250px;
-    border-radius: 8px;
+.drop-zone i {
+    font-size: 3.2rem;
     margin-bottom: 10px;
+}
+
+.file-name-tag {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #007bff;
 }
 
 .action-btn {
     background: var(--accent-color);
     color: var(--btn-text);
-    border: none;
-    padding: 12px 30px;
+    border: 2px solid var(--border-color);
+    padding: 14px 30px;
     font-size: 1rem;
     font-weight: bold;
-    border-radius: 6px;
+    border-radius: 8px;
     width: 100%;
 }
-.action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .result-box {
     margin-top: 20px;
     word-break: break-all;
 }
+
 .result-box input {
-    width: 70%;
-    padding: 8px;
-    margin-right: 5px;
+    width: 75%;
+    padding: 10px;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background: var(--bg-color);
-    color: var(--text-color);
+    border-radius: 6px;
+    margin-right: 5px;
 }
 
+.result-box button {
+    padding: 10px 15px;
+    background: var(--accent-color);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+/* SIDEBAR SETTINGS */
 .sidebar {
     position: fixed;
     top: 0;
-    right: -350px;
-    width: 320px;
+    right: -360px;
+    width: 340px;
     height: 100%;
     background: var(--card-bg);
     border-left: 2px solid var(--border-color);
     z-index: 1000;
-    transition: right 0.3s ease;
+    transition: right 0.35s ease;
     padding: 20px;
     overflow-y: auto;
 }
-.sidebar.open { right: 0; }
+
+.sidebar.open {
+    right: 0;
+}
+
 .sidebar-header {
     display: flex;
     justify-content: space-between;
@@ -226,16 +287,22 @@ header {
     padding-bottom: 10px;
     margin-bottom: 20px;
 }
+
 .setting-item {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
-.setting-item label { font-size: 0.9rem; font-weight: bold; }
-.setting-item button,.admin-btn,.shortcut-btn {
+
+.setting-item label {
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.setting-item button, .admin-btn {
     padding: 10px;
-    border: 1px solid var(--border-color);
+    border: 1.5px solid var(--border-color);
     background: var(--accent-color);
     color: var(--btn-text);
     border-radius: 6px;
@@ -244,31 +311,45 @@ header {
     font-weight: bold;
     display: block;
 }
-.admin-btn { background-color: #25D366; color: white; border: none; }
 
-.shortcut-buttons {
+.admin-btn {
+    background-color: #25D366 !important;
+    color: white !important;
+    border: none;
+}
+
+.shortcut-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
 }
+
 .shortcut-btn {
-    font-size: 0.8rem;
-    padding: 10px 5px;
+    font-size: 0.75rem;
+    padding: 8px 4px !important;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
 }
-.shortcut-btn i { font-size: 1.2rem; }
 
-.search-form { display: flex; gap: 5px; }
+.search-form {
+    display: flex;
+    gap: 5px;
+}
+
 .search-form input {
     flex: 1;
     padding: 8px;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 6px;
 }
-.danger-btn { background: #ff4d4d!important; color: white!important; border: none!important; }
+
+.danger-btn {
+    background: #ff4d4d !important;
+    color: white !important;
+    border: none !important;
+}
 
 .overlay {
     display: none;
@@ -277,9 +358,48 @@ header {
     background: rgba(0,0,0,0.5);
     z-index: 999;
 }
-.overlay.active { display: block; }
 
-@media (max-width: 600px) {
-  .tab-navigation { flex-direction: column; }
-  .result-box input { width: 100%; margin-bottom: 8px; }
-    }
+.overlay.active {
+    display: block;
+}
+
+/* MODAL IN-APP WEBVIEW (OPSI PENGEMBANG) */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1001;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    width: 90%;
+    max-width: 800px;
+    height: 80vh;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 10px 15px;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.modal-content iframe {
+    width: 100%;
+    height: 100%;
+}
