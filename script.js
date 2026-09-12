@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Elements
     const tabPhoto = document.getElementById('tab-photo');
     const tabVideo = document.getElementById('tab-video');
     const sectionPhoto = document.getElementById('section-photo');
@@ -35,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgVideo = document.getElementById('bg-video');
     const mainHeader = document.getElementById('main-header');
 
-    // Load data dari localStorage
     const savedUsername = localStorage.getItem('scarlet_username');
     if (savedUsername) {
         usernameInput.value = savedUsername;
@@ -109,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Tab switching
     tabPhoto.addEventListener('click', () => switchTab('photo'));
     tabVideo.addEventListener('click', () => switchTab('video'));
     function switchTab(tab) {
@@ -119,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         sectionVideo.classList.toggle('active', tab === 'video');
     }
 
-    // Sidebar
     settingsBtn.addEventListener('click', () => {
         settingsSidebar.classList.add('open');
         overlay.classList.add('active');
@@ -131,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
     closeSettingsBtn.addEventListener('click', closeMenu);
     overlay.addEventListener('click', closeMenu);
 
-    // Drag & Drop + Preview
     function setupDrop(dropZone, input, preview, icon, text) {
         dropZone.addEventListener('click', () => input.click());
         ['dragenter', 'dragover'].forEach(evt => {
@@ -156,58 +151,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function showPreview(file, preview, icon, text) {
         if (!file) return;
         const url = URL.createObjectURL(file);
-        if (file.type.startsWith('image')) {
-            preview.src = url;
-            preview.style.display = 'block';
-            icon.style.display = 'none';
-            text.textContent = file.name;
-        } else {
-            preview.src = url;
-            preview.style.display = 'block';
-            icon.style.display = 'none';
-            text.textContent = file.name;
-        }
+        preview.src = url;
+        preview.style.display = 'block';
+        icon.style.display = 'none';
+        text.textContent = file.name;
     }
 
     setupDrop(dropPhoto, inputPhoto, previewPhoto, iconPhoto, textPhoto);
     setupDrop(dropVideo, inputVideo, previewVideo, iconVideo, textVideo);
 
-    // Upload Foto ke ImgBB
-    btnUploadPhoto.addEventListener('click', async () => {
-        const file = inputPhoto.files[0];
-        if (!file) return alert('Pilih foto terlebih dahulu!');
+    async function uploadToCatbox(file, resultContainer, button) {
+        if (!file) return alert('Pilih file terlebih dahulu!');
+        if (file.size > 200 * 1024 * 1024) return alert('File terlalu besar! Maks 200MB');
 
-        btnUploadPhoto.disabled = true;
-        resultPhoto.innerHTML = '<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah foto...</p>';
-
-        const formData = new FormData();
-        formData.append('image', file);
-
-        try {
-            const res = await fetch('https://api.imgbb.com/1/upload?key=6d2578c47486241a740751e18ff1fb76', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-            if (data.success) {
-                showResult(resultPhoto, data.data.url);
-            } else {
-                resultPhoto.innerHTML = '<p style="color: red;">Gagal mengunggah foto.</p>';
-            }
-        } catch {
-            resultPhoto.innerHTML = '<p style="color: red;">Terjadi kesalahan koneksi.</p>';
-        } finally {
-            btnUploadPhoto.disabled = false;
-        }
-    });
-
-    // Upload Video ke Catbox
-    btnUploadVideo.addEventListener('click', async () => {
-        const file = inputVideo.files[0];
-        if (!file) return alert('Pilih video terlebih dahulu!');
-
-        btnUploadVideo.disabled = true;
-        resultVideo.innerHTML = '<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah video...</p>';
+        button.disabled = true;
+        resultContainer.innerHTML = '<p><i class="fa-solid fa-spinner fa-spin"></i> Mengunggah ke Catbox...</p>';
 
         const formData = new FormData();
         formData.append('reqtype', 'fileupload');
@@ -220,20 +178,29 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const url = await res.text();
             if (url.startsWith('http')) {
-                showResult(resultVideo, url);
+                showResult(resultContainer, url);
             } else {
-                resultVideo.innerHTML = '<p style="color: red;">Gagal mengunggah video.</p>';
+                resultContainer.innerHTML = `<p style="color: red;">Gagal: ${url}</p>`;
             }
-        } catch {
-            resultVideo.innerHTML = '<p style="color: red;">Terjadi kesalahan koneksi.</p>';
+        } catch (error) {
+            console.error(error);
+            resultContainer.innerHTML = `<p style="color: red;">Gagal: ${error.message}. Coba ganti jaringan/WiFi</p>`;
         } finally {
-            btnUploadVideo.disabled = false;
+            button.disabled = false;
         }
+    }
+
+    btnUploadPhoto.addEventListener('click', () => {
+        uploadToCatbox(inputPhoto.files[0], resultPhoto, btnUploadPhoto);
+    });
+
+    btnUploadVideo.addEventListener('click', () => {
+        uploadToCatbox(inputVideo.files[0], resultVideo, btnUploadVideo);
     });
 
     function showResult(container, url) {
         container.innerHTML = `
-            <p style="color: green;"><i class="fa-solid fa-check"></i> Berhasil!</p>
+            <p style="color: #25D366;"><i class="fa-solid fa-check"></i> Berhasil!</p>
             <input type="text" value="${url}" readonly>
             <button class="expand-effect btn-copy">Salin</button>
         `;
